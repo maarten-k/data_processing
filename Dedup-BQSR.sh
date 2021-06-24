@@ -2,7 +2,7 @@
 
 
 # Load needed variables
-. ${soft}/data_processing/start.sh
+. ${soft}/data_processing/job-variables.sh
 
 # Parse inputs
 bam=$1

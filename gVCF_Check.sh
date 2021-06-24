@@ -2,7 +2,7 @@
 
 
 # Set var
-. ${soft}/data_processing/start.sh
+. ${soft}/data_processing/job-variables.sh
 inp=$1
 acc=$(basename ${inp} | cut -d \. -f 1)
 base=$(basename ${inp})

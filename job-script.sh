@@ -11,7 +11,7 @@
 
 
 # Setup the Environment for the Job
-. /cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/start.sh
+. /cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/job-variables.sh
 host=$(hostname)
 wrk=$(pwd)
 view=$1
