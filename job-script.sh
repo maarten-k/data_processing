@@ -31,24 +31,24 @@ export VIEW_NAME=${view}
 
 
 # Exit if <4 hours on Proxy
-echo -e "\\nChecking Lifetime of VOMS Proxy is >4hr\\n" 1>&2
+echo -e "\\nChecking Lifetime of VOMS Proxy is >4hr\\n"
 var=$(voms-proxy-info -all | grep "timeleft" | awk 'NR == 1 {print $3}' | sed 's/://g')
 
 if [ ${var} -lt 040000 ]
 then
-	echo -e "Exiting:\\t<4 hours left on VOMS proxy" 1>&2
+	echo -e "Exiting:\\t<4 hours left on VOMS proxy"
 #	exit
 fi
 
 
 # Exit if < 200GB on Scratch
-echo -e "\\n\\nChecking Avilable Space on ${host}\\n" 1>&2
+echo -e "\\n\\nChecking Avilable Space on ${host}\\n"
 freespace=`stat --format "%a*%s/1024^3" -f $TMPDIR|bc`
 df -h $TMPDIR
 
 if [ $freespace -lt 200 ]
 then
-	echo "\\nExiting:\\t< 200 GB free space on scratch\\n" 1>&2
+	echo "\\nExiting:\\t< 200 GB free space on scratch\\n"
 	exit
 fi
 
@@ -62,5 +62,5 @@ fi
 ####################################################################################################
 
 
-echo -e "\\n\\nExecuting pipeline\\n" 1>&2
+echo -e "\\n\\nExecuting pipeline\\n"
 python ${soft}/data_processing/bin/PiCaS-General.py ${view}
