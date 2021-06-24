@@ -1,0 +1,5 @@
+USERNAME = "me"
+PASS = "Y0ur_F@C5"
+URL = "https://picas.surfsara.nl:6984/"
+DBNAME = "myDB"
+VIEW_NAME = "TESTING"
