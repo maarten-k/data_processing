@@ -26,7 +26,9 @@ outSRM=${project}/${mode}/${ProjectID}
 # cd /projectmine-nfs/Disk/User/bkenna/projects/process_gvcf/Callsets/WXS/${ProjectID}/
 # ~/tree-1.7.0/tree -fish gVCFs/ | grep "gz$" > ${wrk}/${ProjectID}-gVCFs.txt
 # grep "[0-9][0-9][0-9]M" ${wrk}/${ProjectID}-gVCFs.txt | awk '{print $2}' | awk -F "/" '{print $(NF-1)"|gsiftp://gridftp.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/Disk/User/bkenna/projects//process_gvcf/Callsets/WXS/DF3_WES/"$0}' >> ${wrk}/${ProjectID}.list
-# echo -e "select b38_SM.SM, 'gsiftp://gridftp.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/' || b38_gVCF from b38_SM left join df3_wes using(SM) where b38_gVCF is not null and b38_gVCF like '%WXS%' and WXS_Import is null and df3_wes.SM is null order by random() limit 6400;" | sqlite3 ${db} | grep "Disk" >> ${wrk}/${ProjectID}.list
+# echo -e "select b38_SM.SM, 'gsiftp://gridftp.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/' || b38_gVCF from b38_SM left join df3_wes using(SM) where b38_gVCF is not null and b38_gVCF like '%WXS%' and SM like 'SRR%' and WXS_Import is null and df3_wes.SM is null order by random() limit 4464;" | sqlite3 ${db} | grep "Disk" >> ${wrk}/${ProjectID}.list
+# sort ${wrk}/${ProjectID}.list | uniq > tmp
+# mv tmp ${wrk}/${ProjectID}.list
 # uberftp -rm ${out}/VCF/${ProjectID}.list
 # globus-url-copy -c -cd file://${wrk}/${ProjectID}.list ${out}/VCF/${ProjectID}.list
 

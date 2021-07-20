@@ -48,6 +48,7 @@ done
 
 # Generate initial genoDB
 N=$(wc -l ${wrk}/${ProjectID}_${loci}.sample_map | awk '{print $1}')
+if [ ${N} -eq 0 ]; then exit; fi
 echo -e "\\n\\nN importing = ${N}\\n"
 if [ ! -d ${wrk}/genoDB/${ProjectID}-${loci} ]
 then
@@ -122,10 +123,10 @@ fi
 testLoci=$(head -n 1 ${tgt} | awk '{print $1":"$2"-"$2+50}')
 java -Djava.io.tmpdir=${wrk} -jar ${gatk4} GenotypeGVCFs -R ${ref} -O ${wrk}/${ProjectID}-${loci}.vcf.gz -D ${dbSNP38} -G StandardAnnotation -G AS_StandardAnnotation -V gendb://${wrk}/genoDB/${ProjectID}-${loci} -L ${testLoci} &>> ${wrk}/${ProjectID}-${loci}.Joint-Calling.log
 tabix -h ${wrk}/${ProjectID}-${loci}.vcf.gz donkey | tail -n 1 | cut -f 10- | sed 's/\t/\n/g' > SM.txt
-sort ${wrk}/${ProjectID}_${loci}.imported.txt | uniq > tmp
-mv tmp ${wrk}/${ProjectID}_${loci}.imported.txt
-for sm in $(cut -f 1 SM.txt); do awk '$1 ~ /^'${sm}'$/' ${wrk}/${ProjectID}_${loci}.imported.txt; done > tmp
-mv tmp ${wrk}/${ProjectID}_${loci}.imported.txt
+# sort ${wrk}/${ProjectID}_${loci}.imported.txt | uniq > tmp
+# mv tmp ${wrk}/${ProjectID}_${loci}.imported.txt
+# for sm in $(cut -f 1 SM.txt); do awk '$1 ~ /^'${sm}'$/' ${wrk}/${ProjectID}_${loci}.imported.txt; done > tmp
+# mv tmp ${wrk}/${ProjectID}_${loci}.imported.txt
 
 
 # Print metrics

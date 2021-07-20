@@ -24,4 +24,16 @@ b). Job Management read me code blocks:
 
 
 
-FYI: Ignore the Joint Calling folder for now as some scripts are actively being worked on
+*FYI: Ignore the Joint Calling folder for now as some scripts are actively being worked on*. Progress described below & supporting sample information / data processing progress found in the  "*AWS-dbGaP-Grid*" google drive.
+
+```
+- Disclaimer: Proceed with caution ;)
+
+- Added core scripts for grid & HPC (ie import a list of gVCFs)
+
+- Added helper scripts for sanity checking each of the genomics DB for:
+	a). Who has been / yet to be imported.
+	b). Call rates for the imported samples per shard.
+	c). Offloading onto the HPC for adding the final ~100 samples or if grid causes issues.
+```
+

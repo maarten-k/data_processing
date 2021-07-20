@@ -71,7 +71,7 @@ then
 
 	# Download & Parse gVCF
 	echo -e "\\nRunning creation mode\\n"
-	cut -d \| -f 2 ${wrk}/${ProjectID}.list | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
+	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
 	touch ${wrk}/${ProjectID}_${loci}.imported.txt
 
 
@@ -120,14 +120,15 @@ else
 	tar -xf ${ProjectID}-${loci}.tar.gz && rm -f ${ProjectID}-${loci}.tar.gz
 	bash Decompression.sh
 	rm -f Decompression.sh compression.sh
+	sed 's/,/\n/g' genoDB/${ProjectID}-${loci}/callset.json | grep -wo "sample.*" | cut -d \: -f 2 | cut -d \" -f 2 | awk '{ print $1"\t'${wrk}'/"$1".g.vcf.gz"}' > ${wrk}/${ProjectID}_${loci}.imported.txt
 
 
 	# Filter gVCF list
-	cut -d \| -f 2 ${wrk}/${ProjectID}.list | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' > ${wrk}/${ProjectID}-gVCF.list
+	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' > ${wrk}/${ProjectID}-gVCF.list
 	touch tmp
 	awk -F "/" '{print "/"$NF}' ${ProjectID}-gVCF.list | grep -v "tbi" | while read gvcf
 		do
-		if [ -z `grep "${gvcf}$" ${ProjectID}_${loci}.imported.txt | awk 'NR == 1 {print $1}'` ]
+		if [ -z `grep "${gvcf}$" ${wrk}/${ProjectID}_${loci}.imported.txt | awk 'NR == 1 {print $1}'` ]
 		then
 			grep "${gvcf}" ${wrk}/${ProjectID}.list >> tmp
 		fi
@@ -141,7 +142,7 @@ else
 	N=$(ls ${wrk}/${ProjectID}*gVCF*list | wc -l)
 	N_Samples=$(cat ${wrk}/${ProjectID}*gVCF*[0-9]*list | grep -c "gz$")
 	count=0
-	if [ ${N_Samples} == 0 ]; then echo -e "\\nExiting, provided samples already exist in DB\\n"; cd ..; rm -fr ${ProjectID}_${loci}; exit; fi
+	if [ ${N_Samples} == 0 ]; then echo -e "\\nExiting, provided samples already exist in the DB\\n"; cd ..; rm -fr ${ProjectID}_${loci}; exit; fi
 	echo -e "\\nItertatively importing N Samples = ${N_Samples} across N Batches = ${N}\\n"
 	for batch in $(ls ${wrk}/${ProjectID}*gVCF*list)
 		do
