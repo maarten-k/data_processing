@@ -236,7 +236,7 @@ tgt_2=${WXS_JOINT_CALLING_LOCI}/chr2/chr2.shard_123.bed
 
 
 # Joint Calling / Generate Callset / Generate pVCF etc etc
-java -Djava.io.tmpdir=${wrk} -jar ${GATK} GenotypeGVCFs -R ${REF} -O ${wrk}/${ProjectID}-${loci}.vcf.gz -D ${dbSNP38} -G StandardAnnotation -G AS_StandardAnnotation -V gendb://${wrk}/genoDB/${ProjectID} -L ${tgt} &>> ${wrk}/${ProjectID}-${loci}.Joint-Calling.log
+java -jar ${GATK} GenotypeGVCFs -R ${REF} -O chr1.vcf.gz -D ${dbSNP38} -G StandardAnnotation -G AS_StandardAnnotation -V combined-group-gVCF-chr1 -L chr1
 
 
 
