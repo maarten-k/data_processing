@@ -85,7 +85,7 @@ Exome_Shard=$(ls ${WES_Loci_Dir}/${chrom} | sort -R | head -n 1 | sed 's/.bed//g
 tgt=${WES_Loci_Dir}/${chrom}/chr21_shard_5.bed
 
 
-bash /scratch/bkenna/data_processing/joint_calling/Generate-Callset.sh ${ProjectID} ${tgt} ${out}/VCF/${ProjectID}.list ${mode}
+bash ${soft}/software/bin/data_processing/joint_calling/Generate-Callset.sh ${ProjectID} ${tgt} ${out}/VCF/${ProjectID}.list ${mode}
 ```
 
 
