@@ -22,6 +22,7 @@ echo -e "\\nDownloading genoDB"
 globus-url-copy ${genoDB} file://${wrk}/
 tar -xf ${ProjectID}-${loci}.tar.gz
 rm -f ${ProjectID}-${loci}.tar.gz
+bash Decompression.sh
 
 
 # Query callset
@@ -47,7 +48,7 @@ echo -e "\\n\\n\\n\\n" >> ${wrk}/${ProjectID}-${loci}.Test.log
 echo -e "\\nConverting to plink and analyzing results"
 ${PLINK} --vcf ${wrk}/${ProjectID}-${loci}.vcf.gz --double-id --make-bed --out ${ProjectID}_${loci} --geno 0.1 --mind 0.85 &>> ${wrk}/${ProjectID}-${loci}.Test.log
 rm -f ${wrk}/${ProjectID}-${loci}.vcf.gz ${wrk}/${ProjectID}-${loci}.vcf.gz.tbi
-N_Fail=$(awk 'NR > 1' ${ProjectID}_${loci}.irem | wc -l)
+N_Fail=$(cat ${ProjectID}_${loci}.irem | wc -l)
 GTR=$(grep "Total genotyping rate in remaining samples" ${ProjectID}_${loci}.log | awk '{print $NF}' | sed 's/\.$//g')
 N_Samples=$(wc -l ${ProjectID}_${loci}.fam | awk '{print $1}')
 N_Variants=$(wc -l ${ProjectID}_${loci}.bim | awk '{print $1}')
