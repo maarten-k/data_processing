@@ -2,7 +2,7 @@
 
 
 # Set vars & Parse Args
-. ${soft}/software/bin/data_processing/job-variables.sh
+. /cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/job-variables.sh
 ref=${b38}/hs38DH.fa
 ProjectID=$1
 tgt=$2
@@ -119,7 +119,7 @@ fi
 
 
 # Check genoDB
-testLoci=$(head -n 1 ${tgt} | awk '{print $1":"$2"-"$2+50}')
+testLoci=$(head -n 1 ${tgt} | awk '{print $1":"$2"-"$2+100}')
 java -Djava.io.tmpdir=${wrk} -jar ${gatk4} GenotypeGVCFs -R ${ref} -O ${wrk}/${ProjectID}-${loci}.vcf.gz -D ${dbSNP38} -G StandardAnnotation -G AS_StandardAnnotation -V gendb://${wrk}/genoDB/${ProjectID}-${loci} -L ${testLoci} &>> ${wrk}/${ProjectID}-${loci}.Joint-Calling.log
 tabix -h ${wrk}/${ProjectID}-${loci}.vcf.gz donkey | tail -n 1 | cut -f 10- | sed 's/\t/\n/g' > SM.txt
 # sort ${wrk}/${ProjectID}_${loci}.imported.txt | uniq > tmp

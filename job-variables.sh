@@ -23,12 +23,13 @@ KGgold=${b38}/1000G_phase1.snps.high_confidence.hg38.vcf.gz
 
 
 # Alignment software
-gatk4=${soft}/bin/gatk-4.1.4.0/gatk-package-4.1.4.0-local.jar
-BWA=${soft}/bin/bwa
-SAMTOOLS=${soft}/bin/samtools
-TABIX=${soft}/bin/tabix
+gatk4=${soft}/software/bin/gatk-4.1.4.0/gatk-package-4.1.4.0-local.jar
+BWA=${soft}/software/bin/bwa
+SAMTOOLS=${soft}/software/bin/samtools
+TABIX=${soft}/software/bin/tabix
+BGZIP=${soft}/software/bin/bgzip
 SAMBLASTER=${soft}/samblaster/samblaster
-BCFTOOLS=${soft}/bin/bcftools
+BCFTOOLS=${soft}/software/bin/bcftools
 
 
 # Set dCache paths

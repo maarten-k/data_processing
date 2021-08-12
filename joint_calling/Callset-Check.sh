@@ -2,7 +2,7 @@
 
 
 # Load vars
-. ${soft}/software/bin/data_processing/job-variables.sh
+. /cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/job-variables.sh
 ref=${b38}/hs38DH.fa
 PLINK=${soft}/software/bin/plink
 VCFTOOLS=/cvmfs/softdrive.nl/bkenna/Miniconda2/bin/vcftools

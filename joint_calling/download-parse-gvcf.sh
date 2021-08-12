@@ -2,7 +2,7 @@
 
 
 # Set args
-. ${soft}/software/bin/data_processing/job-variables.sh
+. /cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/job-variables.sh
 gvcfList=$1
 tgt=$2
 loci=$(basename ${tgt} | sed 's/.bed//g')
@@ -19,24 +19,21 @@ touch ${wrk}/Samples-Dropped.txt
 # Parse gVCF until globus is done
 Nexpected=$(ls *gz | wc -l)
 ls *gz | while read gvcf
-		do
+	do
 
-		# Parse active loci
-		if [ ! -f ${gvcf}.tbi ]; then ${TABIX} -p vcf -f ${gvcf}; else touch ${gvcf}.tbi; fi
-		${TABIX} ${gvcf} -h -R ${tgt} | uniq | ${soft}/bgzip -c > ${out}/tmp.subset.g.vcf.gz
-		mv ${out}/tmp.subset.g.vcf.gz ${out}/${gvcf}
-		${TABIX} -p vcf -f ${out}/${gvcf}
-		rm -f ${gvcf} ${gvcf}.tbi
+	# Parse active loci
+	if [ ! -f ${gvcf}.tbi ]; then ${TABIX} -p vcf -f ${gvcf}; else touch ${gvcf}.tbi; fi
+	${TABIX} ${gvcf} -h -R ${tgt} | uniq | ${BGZIP} -c > ${out}/tmp.subset.g.vcf.gz
+	mv ${out}/tmp.subset.g.vcf.gz ${out}/${gvcf}
+	${TABIX} -p vcf -f ${out}/${gvcf}
+	rm -f ${gvcf} ${gvcf}.tbi
 
-		# Manage crap
-		if [ `${TABIX} ${out}/${gvcf} -R ${tgt} | wc -l` -le 1 ]
-		then
-			rm -f ${out}/${gvcf} ${out}/${gvcf}.tbi
-			echo -e "${gvcf}" >> ${wrk}/Samples-Dropped.txt
-		fi
-
-	done
-
+	# Manage crap
+	if [ `${TABIX} ${out}/${gvcf} -R ${tgt} | wc -l` -le 1 ]
+	then
+		rm -f ${out}/${gvcf} ${out}/${gvcf}.tbi
+		echo -e "${gvcf}" >> ${wrk}/Samples-Dropped.txt
+	fi
 done
 
 

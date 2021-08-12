@@ -2,7 +2,7 @@
 
 
 # Load vars
-. ${soft}/software/bin/data_processing/job-variables.sh
+. /cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/job-variables.sh
 
 
 # Parse input args
@@ -34,13 +34,14 @@ cd ${wrk}
 
 # Download gvcf list + loci
 echo -e "\\n\\nFetching Group gVCF List & Active Loci\\n"
-echo -e "${tgt} file://${wrk}/${loci}.bed\\n${gVCFs} file://${wrk}/${ProjectID}.list" > ${wrk}/Transfer.txt
+echo -e "file://${tgt} file://${wrk}/${loci}.bed\\n${gVCFs} file://${wrk}/${ProjectID}.list" > ${wrk}/Transfer.txt
 globus-url-copy -rst-retries 10 -rst-timeout 3 -f ${wrk}/Transfer.txt
 sort -R ${wrk}/${ProjectID}.list > tmp
 mv tmp ${wrk}/${ProjectID}.list
 
 
 # Exit if downloads failed
+echo -e "\\nChecking loci & gVCF list have downloaded\\n"
 if [ `cat ${wrk}/${ProjectID}.list | wc -l` -eq 0 ] || [ `cat ${wrk}/${loci}.bed | wc -l` -eq 0 ]
 then
 	echo -e "\\n\\nExiting, unable to download loci or gVCF list\\n"
@@ -51,6 +52,7 @@ fi
 
 
 # Check whether to run in update mode
+echo -e "\\nChecking whether a database for active loci has been created for this project\\n"
 if [ `globus-url-copy -list ${outDisk}/Logs/genoDB/${chrom}/${loci}/ | grep -c "imported"` -ge 1 ]
 then
 	updatingDB=1
@@ -91,14 +93,14 @@ then
 		# Parse gVCF if exome, otherwise dowload
 		if [ "${genome}" != "WGS" ]
 		then
-			bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${batch} ${wrk}/${loci}.bed ${wrk}/gVCF-download.txt &>> ${wrk}/Parsing-Log.txt
+			bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${batch} ${wrk}/${loci}.bed ${wrk}/gVCF-download.txt
 		else
 			mv ${wrk}/In_gVCFs/* ${wrk}/Parsed_gVCFs/
 		fi
 
 
 		# Import parsed gVCF
-		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch} &>> ${wrk}/GenoDB-Logging.txt
+		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch}
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
