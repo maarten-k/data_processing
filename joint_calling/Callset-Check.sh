@@ -2,9 +2,9 @@
 
 
 # Load vars
-. ${TMPDIR}/mine_wgs_processing/job_management/start.sh
+. ${soft}/software/bin/data_processing/job-variables.sh
 ref=${b38}/hs38DH.fa
-PLINK=/cvmfs/softdrive.nl/bkenna/Miniconda2/bin/plink
+PLINK=${soft}/software/bin/plink
 VCFTOOLS=/cvmfs/softdrive.nl/bkenna/Miniconda2/bin/vcftools
 ProjectID=$1
 tgt=$2

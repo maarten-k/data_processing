@@ -2,14 +2,12 @@
 
 
 # Set args
-. ${TMPDIR}/mine_wgs_processing/job_management/start.sh
+. ${soft}/software/bin/data_processing/job-variables.sh
 gvcfList=$1
 tgt=$2
 loci=$(basename ${tgt} | sed 's/.bed//g')
 wrk=$(dirname ${gvcfList})
 out=${wrk}/Parsed_gVCFs
-# base=$(basename ${grouping} | sed 's/.list//g')
-TABIX=/cvmfs/softdrive.nl/projectmine_sw/software/bin/tabix
 
 
 # Setup

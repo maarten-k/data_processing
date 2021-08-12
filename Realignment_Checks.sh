@@ -2,9 +2,7 @@
 
 
 # Set needed vars & directories
-. ${TMPDIR}/mine_wgs_processing/job_management/start.sh
-SAMTOOLS=/cvmfs/softdrive.nl/projectmine_sw/software/bin/samtools
-
+. ${soft}/software/bin/data_processing/job-variables.sh
 
 # Parse inputs
 cram=$1

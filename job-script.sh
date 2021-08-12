@@ -16,7 +16,7 @@ host=$(hostname)
 wrk=$(pwd)
 view=$1
 export TMPDIR=${TMPDIR}
-export PATH=${soft}/bin:${soft}/data_processing:$PATH
+export PATH=${soft}/bin:${soft}/software/bin/data_processing:$PATH
 export PYTHONPATH=${soft}/lib/python2.7/site-packages/:${PYTHONPATH}
 export VIEW_NAME=${view}
 
@@ -63,4 +63,4 @@ fi
 
 
 echo -e "\\n\\nExecuting pipeline\\n"
-python ${soft}/data_processing/bin/PiCaS-General.py ${view}
+python ${soft}/software/bin/data_processing/PiCaS-General.py ${view}

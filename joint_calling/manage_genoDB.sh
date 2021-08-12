@@ -5,7 +5,7 @@
 genoDB=$1 # Path to where the "genoDB" directory is
 ProjectID=$2
 out=$3 # Path + Prefix Name for the resulting archive
-soft=/cvmfs/softdrive.nl/bkenna/Miniconda2/bin
+soft=/cvmfs/softdrive.nl/projectmine_sw/software/bin
 cd ${genoDB}
 
 

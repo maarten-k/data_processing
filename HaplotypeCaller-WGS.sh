@@ -2,10 +2,7 @@
 
 
 # Set needed vars & directories
-. ${soft}/data_processing/job-variables.sh
-dbSNP=/cvmfs/softdrive.nl/projectmine_sw/resources/Build38/hs38DH/dbsnp_146.hg38.vcf.gz
-tgt=/cvmfs/softdrive.nl/projectmine_sw/resources/Build38/hs38DH/cds_100bpSplice_utr_codon_mirbase.bed
-
+. ${soft}/software/bin/data_processing/job-variables.sh
 
 # Parse inputs
 cram=$1

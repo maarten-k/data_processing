@@ -2,8 +2,7 @@
 
 
 # Set vars & Parse Args
-. ${TMPDIR}/mine_wgs_processing/job_management/start.sh
-TABIX=/cvmfs/softdrive.nl/projectmine_sw/software/bin/tabix
+. ${soft}/software/bin/data_processing/job-variables.sh
 ref=${b38}/hs38DH.fa
 ProjectID=$1
 tgt=$2
@@ -153,7 +152,7 @@ rm -f ${wrk}/${ProjectID}-${loci}.vcf.gz ${wrk}/${ProjectID}-${loci}.vcf.gz.tbi 
 
 # Archive & push to dCache
 echo -e "\\n\\nArchiving genoDB for dCache upload\\n\\n"
-bash ${TMPDIR}/mine_wgs_processing/job_management/joint_calling/manage_genoDB.sh ${wrk} ${ProjectID}-${loci} ${wrk}/${ProjectID}-${loci}
+bash ${soft}/software/bin/data_processing/joint_calling/manage_genoDB.sh ${wrk} ${ProjectID}-${loci} ${wrk}/${ProjectID}-${loci}
 uberftp -rm ${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz
 globus-url-copy -cd file://${wrk}/${ProjectID}-${loci}.tar.gz ${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz
 rm -f ${wrk}/${ProjectID}-${loci}.tar.gz

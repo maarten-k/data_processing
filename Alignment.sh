@@ -2,7 +2,7 @@
 
 
 # Load needed variables
-. ${soft}/data_processing/job-variables.sh
+. ${soft}/software/bin/data_processing/job-variables.sh
 
 
 # Exit if not enough disk space

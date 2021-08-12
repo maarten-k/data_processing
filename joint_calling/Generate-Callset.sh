@@ -2,10 +2,7 @@
 
 
 # Load vars
-. ${TMPDIR}/mine_wgs_processing/job_management/start.sh
-ref=${b38}/hs38DH.fa
-# n=$(echo $RANDOM % 10 | bc)
-# sleep ${n}s
+. ${soft}/software/bin/data_processing/job-variables.sh
 
 
 # Parse input args
@@ -94,14 +91,14 @@ then
 		# Parse gVCF if exome, otherwise dowload
 		if [ "${genome}" != "WGS" ]
 		then
-			bash ${TMPDIR}/mine_wgs_processing/job_management/joint_calling/download-parse-gvcf.sh ${batch} ${wrk}/${loci}.bed ${wrk}/gVCF-download.txt &>> ${wrk}/Parsing-Log.txt
+			bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${batch} ${wrk}/${loci}.bed ${wrk}/gVCF-download.txt &>> ${wrk}/Parsing-Log.txt
 		else
 			mv ${wrk}/In_gVCFs/* ${wrk}/Parsed_gVCFs/
 		fi
 
 
 		# Import parsed gVCF
-		bash ${TMPDIR}/mine_wgs_processing/job_management/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch} &>> ${wrk}/GenoDB-Logging.txt
+		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch} &>> ${wrk}/GenoDB-Logging.txt
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
@@ -158,7 +155,7 @@ else
 		# Parse gVCF if exome, otherwise dowload
 		if [ "${genome}" != "WGS" ]
 		then
-			bash ${TMPDIR}/mine_wgs_processing/job_management/joint_calling/download-parse-gvcf.sh ${wrk}/${ProjectID}-gVCF.list ${wrk}/${loci}.bed &>> ${wrk}/Parsing-Log.txt
+			bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${wrk}/${ProjectID}-gVCF.list ${wrk}/${loci}.bed &>> ${wrk}/Parsing-Log.txt
 		else
 			mkdir -p Parsed_gVCFs/
 			mv In_gVCFs/* Parsed_gVCFs/
@@ -166,7 +163,7 @@ else
 
 
 		# Import parsed gVCF
-		bash ${TMPDIR}/mine_wgs_processing/job_management/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
+		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
