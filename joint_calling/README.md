@@ -103,12 +103,17 @@ cd /projectmine-nfs/$Tape_Results
 ls -lh genoDB/chr21/chr21_shard_5/
 
 
-# Check out an importing log
+# List non / backed-up genoDB
+${soft}/software/bin/tree -fish genoDB/ | grep "tar.gz" | grep "backup"
+${soft}/software/bin/tree -fish genoDB/ | grep "tar.gz" | grep -v "backup"
+
+
+# Check out an importing log: Only the most recent from a job is kept
 cd /projectmine-nfs/${Disk_Results}
 less Logs/genoDB/chr21/chr21_shard_5/${ProjectID}-chr21_shard_5.genoDB.log
 
 
-# Check out the ETL sanity check
+# Check out the ETL sanity check: Only the most recent from a job is kept
 ls Checks/chr21/chr21_shard_5/
 less Checks/chr21/chr21_shard_5/${ProjectID}-chr21_shard_5.Joint-Calling.log
 wc -l Checks/chr21/chr21_shard_5/SM.txt	# Number of samples
