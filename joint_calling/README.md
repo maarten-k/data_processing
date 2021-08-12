@@ -13,7 +13,7 @@ SRM_Dir=srm://srm.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE
 Gloubs_Dir=gsiftp://gridftp.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE
 SRM_Callset=${projectSRM}/process_gvcf/Callsets
 Globus_Callset=${project}/process_gvcf/Callsets
-db=~/project/databases/meta.db
+db=/cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/meta.db
 mkdir -p ${wrk} && cd ${wrk}
 
 
