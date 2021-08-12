@@ -123,5 +123,16 @@ The file does not contain a header so that the 1354 tables can be concatenated
 genoDB_ID,chrom,Loci,DB_Size,Joint_Calling_Verified,N_Expected_Samples,N_Import,Sample_List_md5sum
 Test_Exome-chr21_shard_5,chr21,chr21_shard_5,15M,1,28,58,ebe270e06d8db7ea90decc0a9c833ce6
 "
+
+# Merge all progress tables
+cd /projectmine-nfs/${Disk_Results}
+echo -e "genoDB_ID\\tChromosome\\tLoci\\tgenoDB_Size\\tJoint_Calling_Verified\\tN_Expected\\tN_Imported\\tSample_List_md5sum" > ${wrk}/genoDB-Progress.txt
+cat $(${soft}/software/bin/tree -fi Checks/ | grep "genoDB-data.txt" | sort -R | xargs) >> ${wrk}/genoDB-Progress.txt
+
+less ${wrk}/genoDB-Progress.txt
+
+
+# List crap GATK-GenomicsDB shards
+awk '$5 != 1' ${wrk}/genoDB-Progress.txt
 ```
 
