@@ -2,7 +2,7 @@
 
 
 
-## Setup Results Directories & PiCaS Design Document
+## Setup Results Directories
 
 ```bash
 # Set vars etc
@@ -40,18 +40,11 @@ for chrom in chr{1..22} chr{X..Y}
 	srmmkdir ${outSRM}/VCF/${chrom}
 	srmmkdir ${outSRM}/genoDB/${chrom}
 done
-
-
-# Create view
-echo -e "${view}" > ${wrk}/views.txt
-/usr/bin/python create_views.py ${wrk}/views.txt
 ```
 
 
 
-## Sanity Check Scripts & Schedule Work
-
-
+## Sanity Check Scripts
 
 ### i). Setup Data to Process
 
