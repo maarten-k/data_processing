@@ -69,7 +69,7 @@ nohup srm-bring-online -lifetime=1209600 ${toStage} &>> ${wrk}/${ProjectID}.stag
 
 Example token schema
 
-![](#/data_processing/joint_calling/Example-Token.PNG)
+![Example-Token](C:\Users\kenna\OneDrive\Documents\GitHub\data_processing\joint_calling\Example-Token.PNG)
 
 
 
