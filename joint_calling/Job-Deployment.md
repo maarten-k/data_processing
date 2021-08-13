@@ -1,7 +1,3 @@
-# Scale Out
-
-
-
 ## Setup Results Directories & PiCaS Design Document
 
 ```bash
@@ -47,9 +43,12 @@ done
 ### i). Setup Data to Process
 
 ```bash
-# List all samples
-echo -e "select SM, '${Gloubs_Dir}/' || b38_gVCF from b38_SM where b38_gVCF like '%Country%' and Projectt = 'MinE' and Site in ('Cirulli', 'UMass', 'Australia-Brisbane', 'Chinese-MND', 'fALS') order by random();" | sqlite3 ${db} > ${wrk}/${ProjectID}.list
-echo -e "select SM, '${Gloubs_Dir}/' || b38_gVCF from b38_SM where b38_gVCF like '%Country%' and Projectt = 'dbGaP';" | sqlite3 ${db} >> ${wrk}/${ProjectID}.list
+# List MinE-WES samples
+echo -e "select SM, '${Gloubs_Dir}/' || b38_gVCF from b38_SM where b38_gVCF like '%Country%' and Projectt = 'MinE' and Site in ('Cirulli', 'UMass', 'Australia-Brisbane', 'Chinese-MND', 'fALS') order by random() limit 300;" | sqlite3 ${db} > ${wrk}/${ProjectID}.list
+
+
+# Append this list with dbGaP-WES samples
+echo -e "select SM, '${Gloubs_Dir}/' || b38_gVCF from b38_SM where b38_gVCF like '%Country%' and Projectt = 'dbGaP' limit 300;" | sqlite3 ${db} >> ${wrk}/${ProjectID}.list
 sort -R ${wrk}/${ProjectID}.list > tmp
 mv tmp ${wrk}/${ProjectID}.list
 
@@ -66,12 +65,6 @@ nohup srm-bring-online -lifetime=1209600 ${toStage} &>> ${wrk}/${ProjectID}.stag
 
 
 ### ii). Create tokens
-
-Example token schema
-
-![Example-Token](./Example-Token.PNG)
-
-
 
 ```bash
 # Create Token Import Script
@@ -91,6 +84,12 @@ done
 nohup bash ${wrk}/Upload-Tokens-${ProjectID}.sh &>> ${wrk}/Upload-Tokens-${ProjectID}.log &
 less ${wrk}/Upload-Tokens-${ProjectID}.log
 ```
+
+
+
+Example token schema
+
+![Example-Token](./Example-Token.PNG)
 
 
 
