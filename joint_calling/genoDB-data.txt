@@ -1,1 +1,3 @@
+genoDB_ID	Chromosome	Loci	genoDB_Size	Joint_Calling_Verified	N_Expected	N_Imported	Sample_List_md5sum
 Test_Exome-chr21_shard_5	chr21	chr21_shard_5	26M	1	30	88	12b8b41b23f3c71d87e8e9df86e13486
+Test_Exome-chr21_shard_10	chr21	chr21_shard_10	13M	1	28	58	ebe270e06d8db7ea90decc0a9c833ce6
