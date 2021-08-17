@@ -1,0 +1,1 @@
+Test_Exome-chr21_shard_5	chr21	chr21_shard_5	26M	1	30	88	12b8b41b23f3c71d87e8e9df86e13486
