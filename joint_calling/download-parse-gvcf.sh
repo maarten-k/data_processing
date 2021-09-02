@@ -29,7 +29,7 @@ ls *gz | while read gvcf
 	rm -f ${gvcf} ${gvcf}.tbi
 
 	# Manage crap
-	if [ `${TABIX} ${out}/${gvcf} -R ${tgt} | wc -l` -le 1 ]
+	if [ `${TABIX} ${out}/${gvcf} -R ${tgt} |head| wc -l` -le 1 ]
 	then
 		rm -f ${out}/${gvcf} ${out}/${gvcf}.tbi
 		echo -e "${gvcf}" >> ${wrk}/Samples-Dropped.txt
