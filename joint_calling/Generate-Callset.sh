@@ -35,7 +35,7 @@ cd ${wrk}
 # Download gvcf list + loci
 echo -e "\\n\\nFetching Group gVCF List & Active Loci\\n"
 echo -e "file://${tgt} file://${wrk}/${loci}.bed\\n${gVCFs} file://${wrk}/${ProjectID}.list" > ${wrk}/Transfer.txt
-globus-url-copy -rst-retries 10 -rst-timeout 3 -f ${wrk}/Transfer.txt
+/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' globus-url-copy -rst-retries 10 -rst-timeout 3 -f ${wrk}/Transfer.txt
 sort -R ${wrk}/${ProjectID}.list > tmp
 mv tmp ${wrk}/${ProjectID}.list
 
@@ -87,20 +87,20 @@ then
 		echo -e "\\nBegining batch ${count}\\n"
 		mkdir -p ${wrk}/In_gVCFs ${wrk}/Parsed_gVCFs
 		# if [ "${genome}" == "WGS" ];then grep "Callset" ${batch} > tmp; mv tmp ${batch}; fi
-		globus-url-copy -rst-retries 10 -rst-timeout 3 -c -cd -concurrency 4 -f ${batch} &>> /dev/null
+		/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' globus-url-copy -rst-retries 10 -rst-timeout 3 -c -cd -concurrency 4 -f ${batch} &>> /dev/null
 
 
 		# Parse gVCF if exome, otherwise dowload
 		if [ "${genome}" != "WGS" ]
 		then
-			bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${batch} ${wrk}/${loci}.bed ${wrk}/gVCF-download.txt
+			/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${batch} ${wrk}/${loci}.bed ${wrk}/gVCF-download.txt
 		else
 			mv ${wrk}/In_gVCFs/* ${wrk}/Parsed_gVCFs/
 		fi
 
 
 		# Import parsed gVCF
-		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch}
+		/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch}
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
@@ -111,7 +111,7 @@ else
 
 	# Download
 	echo -e "${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz file://${wrk}/${ProjectID}-${loci}.tar.gz\\n${outDisk}/Logs/genoDB/${chrom}/${loci}/${ProjectID}_${loci}.imported.txt file://${wrk}/${ProjectID}_${loci}.imported.txt" > ${wrk}/Transfer.txt
-	globus-url-copy -cd -c -f ${wrk}/Transfer.txt
+	/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M'  globus-url-copy -cd -c -f ${wrk}/Transfer.txt
 	rm -f ${wrk}/Transfer.txt
 
 
@@ -151,13 +151,13 @@ else
 		echo -e "\\nBegining batch ${count}\\n"
 		mkdir -p In_gVCFs Parsed_gVCFs
 		if [ "${genome}" == "WGS" ];then grep "Callset" ${batch} > tmp; mv tmp ${batch}; fi
-		globus-url-copy -rst-retries 10 -rst-timeout 3 -c -cd -concurrency 4 -f ${batch}
+		/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M'  globus-url-copy -rst-retries 10 -rst-timeout 3 -c -cd -concurrency 4 -f ${batch}
 
 
 		# Parse gVCF if exome, otherwise dowload
 		if [ "${genome}" != "WGS" ]
 		then
-			bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${wrk}/${ProjectID}-gVCF.list ${wrk}/${loci}.bed &>> ${wrk}/Parsing-Log.txt
+			/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${wrk}/${ProjectID}-gVCF.list ${wrk}/${loci}.bed &>> ${wrk}/Parsing-Log.txt
 		else
 			mkdir -p Parsed_gVCFs/
 			mv In_gVCFs/* Parsed_gVCFs/
@@ -165,7 +165,7 @@ else
 
 
 		# Import parsed gVCF
-		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
+		/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M'  bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done

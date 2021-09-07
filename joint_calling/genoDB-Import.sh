@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+set -x
 # Set vars & Parse Args
 . /cvmfs/softdrive.nl/projectmine_sw/software/bin/data_processing/job-variables.sh
 ref=${b38}/hs38DH.fa
@@ -32,6 +32,7 @@ mkdir -p ${wrk} && cd ${wrk}
 # Sanity check data and only append good to sample_map
 rm -f ${wrk}/${ProjectID}_${loci}.sample_map
 touch ${wrk}/${ProjectID}_${loci}.sample_map
+set +x
 for gvcf in $(ls ${gvcfDir}/*gz)
 	do
 	SM=$(basename ${gvcf} | sed 's/.g.vcf.gz//g')
@@ -43,7 +44,7 @@ for gvcf in $(ls ${gvcfDir}/*gz)
 		echo -e "${SM}\\t${gvcf}" >> ${wrk}/${ProjectID}_${loci}.sample_map
 	fi
 done
-
+set -x
 
 # Generate initial genoDB
 N=$(wc -l ${wrk}/${ProjectID}_${loci}.sample_map | awk '{print $1}')
@@ -53,21 +54,23 @@ if [ ! -d ${wrk}/genoDB/${ProjectID}-${loci} ]
 then
 
 	# Create workspace
-	/usr/bin/time java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+	/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
 
 else
 
 	# Otherwise update
-	/usr/bin/time java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-update-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+	/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-update-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
 fi
 
 
 # Locally clear imported gVCF
 cat ${wrk}/${ProjectID}_${loci}.sample_map >> ${wrk}/${ProjectID}_${loci}.imported.txt
+set +x
 for gvcf in $(cut -f 2 ${wrk}/${ProjectID}_${loci}.sample_map)
 	do
 	rm -f ${gvcf} ${gvcf}.tbi
 done
+set -x
 
 
 # Remotely clear the Pre-parsed gVCF only
@@ -152,7 +155,7 @@ rm -f ${wrk}/${ProjectID}-${loci}.vcf.gz ${wrk}/${ProjectID}-${loci}.vcf.gz.tbi 
 
 # Archive & push to dCache
 echo -e "\\n\\nArchiving genoDB for dCache upload\\n\\n"
-bash ${soft}/software/bin/data_processing/joint_calling/manage_genoDB.sh ${wrk} ${ProjectID}-${loci} ${wrk}/${ProjectID}-${loci}
+/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P' bash ${soft}/software/bin/data_processing/joint_calling/manage_genoDB.sh ${wrk} ${ProjectID}-${loci} ${wrk}/${ProjectID}-${loci}
 uberftp -rm ${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz
 globus-url-copy -cd file://${wrk}/${ProjectID}-${loci}.tar.gz ${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz
 rm -f ${wrk}/${ProjectID}-${loci}.tar.gz
