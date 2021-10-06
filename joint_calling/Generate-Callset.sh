@@ -70,7 +70,7 @@ then
 
 	# Download & Parse gVCF
 	echo -e "\\nRunning creation mode\\n"
-	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
+	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
 	touch ${wrk}/${ProjectID}_${loci}.imported.txt
 
 
