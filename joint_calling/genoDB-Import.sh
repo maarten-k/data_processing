@@ -37,7 +37,7 @@ for gvcf in $(ls ${gvcfDir}/*gz)
 	do
 	SM=$(basename ${gvcf} | sed 's/.g.vcf.gz//g')
 	touch ${gvcf}.tbi
-	if [ `${TABIX} ${gvcf} -R ${tgt} | wc -l` -le 1 ] || [ `awk '$1 ~ /^'${SM}'$/' ${wrk}/${ProjectID}_${loci}.imported.txt | wc -l` -ge 1 ]
+	if [ `${TABIX} ${gvcf} -R ${tgt} | head |wc -l` -le 1 ] || [ `awk '$1 ~ /^'${SM}'$/' ${wrk}/${ProjectID}_${loci}.imported.txt | head | wc -l` -ge 1 ]
 	then
 		rm -f ${gvcf} ${gvcf}.tbi
 	else
@@ -55,11 +55,13 @@ then
 
 	# Create workspace
 	/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+	echo "exit status if creating genoDB $?"
 
 else
 
 	# Otherwise update
-	/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-update-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+	/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-update-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+	echo "exit status if updating genoDB $?"
 fi
 
 
