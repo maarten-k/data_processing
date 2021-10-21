@@ -123,7 +123,7 @@ else
 
 
 	# Filter gVCF list
-	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' > ${wrk}/${ProjectID}-gVCF.list
+	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  > ${wrk}/${ProjectID}-gVCF.list
 	touch tmp
 	awk -F "/" '{print "/"$NF}' ${ProjectID}-gVCF.list | grep -v "tbi" | while read gvcf
 		do
