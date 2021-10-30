@@ -23,7 +23,7 @@ ls *gz | while read gvcf
 
 	# Parse active loci
 	if [ ! -f ${gvcf}.tbi ]; then ${TABIX} -p vcf -f ${gvcf}; else touch ${gvcf}.tbi; fi
-	${TABIX} ${gvcf} -h -R ${tgt} | uniq | ${BGZIP} -l1 -c > ${out}/tmp.subset.g.vcf.gz
+	${TABIX} ${gvcf} -h -R ${tgt} | uniq | ${BCFTOOLS} sort -o ${out}/tmp.subset.g.vcf.gz
 	mv ${out}/tmp.subset.g.vcf.gz ${out}/${gvcf}
 	${TABIX} -p vcf -f ${out}/${gvcf}
 	rm -f ${gvcf} ${gvcf}.tbi
@@ -40,7 +40,7 @@ done
 # Log status
 cd ..
 rm -fr In_gVCFs
-Ndropped=$(cat ${wrk}/Samples-Dropped.txt | wc -l)
+Ndropped=$(wc -l ${wrk}/Samples-Dropped.txt)
 Ngvcf=$(ls ${out}/*gz | wc -l)
 if [ ${Nexpected} == ${Ngvcf} ]
 then
