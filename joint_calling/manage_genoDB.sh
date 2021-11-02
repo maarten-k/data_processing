@@ -31,7 +31,7 @@ done
 
 
 # Archive the compressed genoDB + retrevial script: Decompress for Parent process
-tar -czf ${out}.tar.gz Decompression.sh compression.sh genoDB/
+/cvmfs/softdrive.nl/projectmine_sw/software/bin/tar -I /cvmfs/softdrive.nl/projectmine_sw/software/bin/zstd  -cf ${out}.tar.gz Decompression.sh compression.sh genoDB/
 /usr/bin/time bash Decompression.sh
 rm -fr Decompression.sh compression.sh
 
