@@ -19,9 +19,10 @@ export outDisk=$(echo -e "${out}" | sed 's/Tape/Disk/g')
 
 
 # Setup directories
+set -ex
 mkdir -p ${wrk}/In_gVCFs ${wrk}/Parsed_gVCFs ${wrk}/genoDB
 cd ${wrk}
-
+set +e
 
 ###############################################################################################################
 ###############################################################################################################
@@ -100,7 +101,7 @@ then
 
 
 		# Import parsed gVCF
-		/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch}
+		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch}
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
@@ -114,30 +115,46 @@ else
 	/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M'  globus-url-copy -cd -c -f ${wrk}/Transfer.txt
 	rm -f ${wrk}/Transfer.txt
 
-
+	echo "Unpacking Genodb: $(date)"
 	# Unpack genoDB
-	tar -xf ${ProjectID}-${loci}.tar.gz && rm -f ${ProjectID}-${loci}.tar.gz
+	/cvmfs/softdrive.nl/projectmine_sw/software/bin/tar -I /cvmfs/softdrive.nl/projectmine_sw/software/bin/zstd  -xf ${ProjectID}-${loci}.tar.gz && rm -f ${ProjectID}-${loci}.tar.gz
 	bash Decompression.sh
 	rm -f Decompression.sh compression.sh
 	sed 's/,/\n/g' genoDB/${ProjectID}-${loci}/callset.json | grep -wo "sample.*" | cut -d \: -f 2 | cut -d \" -f 2 | awk '{ print $1"\t'${wrk}'/"$1".g.vcf.gz"}' > ${wrk}/${ProjectID}_${loci}.imported.txt
 
-
+	echo "FilterGVCF Genodb: $(date)"
 	# Filter gVCF list
-	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  > ${wrk}/${ProjectID}-gVCF.list
-	touch tmp
-	awk -F "/" '{print "/"$NF}' ${ProjectID}-gVCF.list | grep -v "tbi" | while read gvcf
-		do
-		if [ -z `grep "${gvcf}$" ${wrk}/${ProjectID}_${loci}.imported.txt | awk 'NR == 1 {print $1}'` ]
-		then
-			grep "${gvcf}" ${wrk}/${ProjectID}.list >> tmp
-		fi
-	done
+	# cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  > ${wrk}/${ProjectID}-gVCF.list
+	# touch tmp
+	# awk -F "/" '{print "/"$NF}' ${ProjectID}-gVCF.list | grep -v "tbi" | while read gvcf
+	# 	do
+	# 	gvcfregex=$(echo $gvcf|sed 's@.g.vcf.gz$@(_exome_extract)?.g.vcf.gz$@g')
+		
+	# 	if [ -z $(grep -P "${gvcfregex}" ${wrk}/${ProjectID}_${loci}.imported.txt | awk 'NR == 1 {print $1}') ]
+	# 	then
+	# 		grep -P "${gvcfregex}" ${wrk}/${ProjectID}.list >> tmp
+			
+	# 	fi
+	# done
+	
+	imported=${wrk}/${ProjectID}_${loci}.imported.txt
+	vcf_list=${wrk}/${ProjectID}.list
+	echo "PWD=${PWD}"
+	cat <(cut -f1 "$imported"|cut -f1 -d".") <(cut -f1 -d"|" "$vcf_list") |sort|uniq -u| awk '{print( $0"|")}' > samples_to_add.list
+	echo "found $(wc -l samples_to_add.list) samples to add"
+	grep -f samples_to_add.list ${vcf_list} > tmp
 	mv tmp ${ProjectID}.list
+	if [ ! -s "${ProjectID}".list ] ;then
+		echo "No new samples to add"
+		exit 0
+	fi
+	echo "FilterDone Genodb: $(date)"
+	
 	rm -f ${ProjectID}-gVCF.list
 
-
+	echo "Amount of lines in list of samples to add to DB $(wc -l ${ProjectID}.list)"
 	# Iterate over batches
-	cut -d \| -f 2 ${ProjectID}.list | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
+	cut -d \| -f 2 ${ProjectID}.list | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
 	N=$(ls ${wrk}/${ProjectID}*gVCF*list | wc -l)
 	N_Samples=$(cat ${wrk}/${ProjectID}*gVCF*[0-9]*list | grep -c "gz$")
 	count=0
@@ -148,24 +165,25 @@ else
 
 		# Download gVCF
 		count=$((${count}+1))
-		echo -e "\\nBegining batch ${count}\\n"
+		echo -e "\\nBegining batch ${count} $(date)\\n"
 		mkdir -p In_gVCFs Parsed_gVCFs
 		if [ "${genome}" == "WGS" ];then grep "Callset" ${batch} > tmp; mv tmp ${batch}; fi
 		/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M'  globus-url-copy -rst-retries 10 -rst-timeout 3 -c -cd -concurrency 4 -f ${batch}
-
+		echo "Downloading gvcf done: $(date)"
 
 		# Parse gVCF if exome, otherwise dowload
 		if [ "${genome}" != "WGS" ]
 		then
-			/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${wrk}/${ProjectID}-gVCF.list ${wrk}/${loci}.bed &>> ${wrk}/Parsing-Log.txt
+			bash ${soft}/software/bin/data_processing/joint_calling/download-parse-gvcf.sh ${wrk}/${ProjectID}-gVCF.list ${wrk}/${loci}.bed &>> ${wrk}/Parsing-Log.txt
 		else
 			mkdir -p Parsed_gVCFs/
 			mv In_gVCFs/* Parsed_gVCFs/
 		fi
-
+		echo "Parsing gvcf done: $(date)"
 
 		# Import parsed gVCF
-		/usr/bin/time -f 'timing: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M'  bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
+		 bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
+		echo "Importing gvcf done: $(date)"
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
