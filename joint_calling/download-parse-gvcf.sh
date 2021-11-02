@@ -23,7 +23,7 @@ ls *gz | while read gvcf
 
 	# Parse active loci
 	if [ ! -f ${gvcf}.tbi ]; then ${TABIX} -p vcf -f ${gvcf}; else touch ${gvcf}.tbi; fi
-	${TABIX} ${gvcf} -h -R ${tgt} | uniq | ${BCFTOOLS} sort -o ${out}/tmp.subset.g.vcf.gz
+	${TABIX} ${gvcf} -h -R ${tgt} | ${BCFTOOLS} sort -O v |uniq |bgzip -l1 > ${out}/tmp.subset.g.vcf.gz
 	mv ${out}/tmp.subset.g.vcf.gz ${out}/${gvcf}
 	${TABIX} -p vcf -f ${out}/${gvcf}
 	rm -f ${gvcf} ${gvcf}.tbi
