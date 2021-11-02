@@ -54,8 +54,15 @@ if [ ! -d ${wrk}/genoDB/${ProjectID}-${loci} ]
 then
 
 	# Create workspace
-	/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+	java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
 	echo "exit status if creating genoDB $?"
+
+	VCF2TileDBException=$(grep VCF2TileDBException ${wrk}/${ProjectID}-${loci}.current-genoDB.log|wc -l)
+	if [ $VCF2TileDBException -ge 1 ];then
+		echo "VCF2TileDBException: stopping all" |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+		cat ${wrk}/${ProjectID}_${loci}.sample_map |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+		exit 1
+	fi
 
 else
 
@@ -102,7 +109,7 @@ then
 	globus-url-copy -cd -c ${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz file://${wrk}/${ProjectID}-${loci}.tar.gz
 
 	# Unpack the previous genoDB
-	tar -xf ${ProjectID}-${loci}.tar.gz && rm -f ${ProjectID}-${loci}.tar.gz
+	/cvmfs/softdrive.nl/projectmine_sw/software/bin/tar -I /cvmfs/softdrive.nl/projectmine_sw/software/bin/zstd  -xf ${ProjectID}-${loci}.tar.gz && rm -f ${ProjectID}-${loci}.tar.gz
 	bash Decompression.sh
 	rm -f Decompression.sh compression.sh ${wrk}/${ProjectID}-${loci}.current-genoDB.log
 
@@ -161,3 +168,6 @@ echo -e "\\n\\nArchiving genoDB for dCache upload\\n\\n"
 uberftp -rm ${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz
 globus-url-copy -cd file://${wrk}/${ProjectID}-${loci}.tar.gz ${out}/genoDB/${chrom}/${loci}/${ProjectID}-${loci}.tar.gz
 rm -f ${wrk}/${ProjectID}-${loci}.tar.gz
+
+
+
