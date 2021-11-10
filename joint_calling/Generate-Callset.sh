@@ -71,7 +71,7 @@ then
 
 	# Download & Parse gVCF
 	echo -e "\\nRunning creation mode\\n"
-	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
+	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_23161_0_0.gvcf.gz$@.g.vcf.gz@g'|sed 's@_23161_0_0.gvcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
 	touch ${wrk}/${ProjectID}_${loci}.imported.txt
 
 
@@ -101,7 +101,13 @@ then
 
 
 		# Import parsed gVCF
-		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch}
+		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs ${batch}  &>> ${wrk}/GenoDB-Logging.txt
+		import_exit_status=$?
+		if [ "$import_exit_status" -ne 0 ];then
+			echo "exit status of genoDB-Import.sh is $import_exit_status . exiting since this is not zero"
+			cat ${wrk}/GenoDB-Logging.txt
+			exit 1
+		fi
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
@@ -140,9 +146,10 @@ else
 	imported=${wrk}/${ProjectID}_${loci}.imported.txt
 	vcf_list=${wrk}/${ProjectID}.list
 	echo "PWD=${PWD}"
-	cat <(cut -f1 "$imported"|cut -f1 -d".") <(cut -f1 -d"|" "$vcf_list") |sort|uniq -u| awk '{print( $0"|")}' > samples_to_add.list
+	cat <(cut -f1 "$imported"|cut -f1 -d".") <(cut -f1 -d"|" "$vcf_list") |sort|uniq -u| awk '{print( $0)}' > samples_to_add.list
 	echo "found $(wc -l samples_to_add.list) samples to add"
-	grep -f samples_to_add.list ${vcf_list} > tmp
+	#use python dict here since grep can not handle large numner of regex (needed for matching begin of string)
+	python -c 'z={x.split("|")[0]:x.strip() for x in  open("Test_Exome.list").readlines()}; q=[print(z[x.strip()]) for x in  open("samples_to_add.list","r").readlines()]' > tmp
 	mv tmp ${ProjectID}.list
 	if [ ! -s "${ProjectID}".list ] ;then
 		echo "No new samples to add"
@@ -153,8 +160,14 @@ else
 	rm -f ${ProjectID}-gVCF.list
 
 	echo "Amount of lines in list of samples to add to DB $(wc -l ${ProjectID}.list)"
+	
+	if [ $(wc -l ${ProjectID}.list|cut -f1 -d " ") -ne $(wc -l samples_to_add.list|cut -f1 -d " ") ];then
+		echo "amount of samples to update is not equel to number of urls"
+		exit 1
+	fi 
+
 	# Iterate over batches
-	cut -d \| -f 2 ${ProjectID}.list | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
+	cut -d \| -f 2 ${ProjectID}.list | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_23161_0_0.gvcf.gz$@.g.vcf.gz@g'|sed 's@_23161_0_0.gvcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
 	N=$(ls ${wrk}/${ProjectID}*gVCF*list | wc -l)
 	N_Samples=$(cat ${wrk}/${ProjectID}*gVCF*[0-9]*list | grep -c "gz$")
 	count=0
@@ -182,8 +195,16 @@ else
 		echo "Parsing gvcf done: $(date)"
 
 		# Import parsed gVCF
-		 bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
+		bash ${soft}/software/bin/data_processing/joint_calling/genoDB-Import.sh ${ProjectID} ${wrk}/${loci}.bed ${wrk}/Parsed_gVCFs &>> ${wrk}/GenoDB-Logging.txt
+		import_exit_status=$?
+		if [ "$import_exit_status" -ne 0 ];then
+			echo "exit status of genoDB-Import.sh is $import_exit_status . exiting since this is not zero"
+			echo "current time $(date)"
+			cat ${wrk}/GenoDB-Logging.txt
+			exit 1
+		fi
 		echo "Importing gvcf done: $(date)"
+
 		rm -f ${batch}
 		rm -fr In_gVCFs Parsed_gVCFs
 	done
