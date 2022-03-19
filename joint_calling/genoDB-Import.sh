@@ -20,6 +20,30 @@ wrk=${TMPDIR}/${ProjectID}_${loci}
 mkdir -p ${wrk} && cd ${wrk}
 
 
+
+check_importexit () {
+	echo "genomicsDBimport exit status: $GenomicsExitStatus" |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+
+  	VCF2TileDBException=$(grep VCF2TileDBException ${wrk}/${ProjectID}-${loci}.current-genoDB.log|wc -l)
+	if [ $VCF2TileDBException -ge 1 ];then
+		echo "VCF2TileDBException: stopping all" |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+		cat ${wrk}/${ProjectID}_${loci}.sample_map |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+		exit 1
+	fi
+
+	 FileBasedVidMapperException=$(grep FileBasedVidMapperException ${wrk}/${ProjectID}-${loci}.current-genoDB.log|wc -l)
+	if [ $FileBasedVidMapperException -ge 1 ];then
+		echo " FileBasedVidMapperException: stopping all" |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+		cat ${wrk}/${ProjectID}_${loci}.sample_map |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+		exit 1
+	fi
+
+	if [ $GenomicsExitStatus -ne 0 ];then
+			echo "genomicsDBimport not zero: exiting due to  exit status: $GenomicsExitStatus" |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+
+	fi
+}
+
 #####################################
 #####################################
 # 
@@ -48,27 +72,23 @@ set -x
 
 # Generate initial genoDB
 N=$(wc -l ${wrk}/${ProjectID}_${loci}.sample_map | awk '{print $1}')
-if [ ${N} -eq 0 ]; then exit; fi
+if [ ${N} -eq 0 ]; then exit 1; fi
 echo -e "\\n\\nN importing = ${N}\\n"
 if [ ! -d ${wrk}/genoDB/${ProjectID}-${loci} ]
 then
 
 	# Create workspace
 	java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
-	echo "exit status if creating genoDB $?"
-
-	VCF2TileDBException=$(grep VCF2TileDBException ${wrk}/${ProjectID}-${loci}.current-genoDB.log|wc -l)
-	if [ $VCF2TileDBException -ge 1 ];then
-		echo "VCF2TileDBException: stopping all" |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
-		cat ${wrk}/${ProjectID}_${loci}.sample_map |tee -a ${wrk}/${ProjectID}-${loci}.current-genoDB.log
-		exit 1
-	fi
+	GenomicsExitStatus=$?
+	check_importexit
 
 else
 
 	# Otherwise update
-	/usr/bin/time -f 'timiming: %C "%E real,%U user,%S sys CPU Percentage: %P maxres: %M' java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-update-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
-	echo "exit status if updating genoDB $?"
+	 java -Djava.io.tmpdir=${wrk} -Xmx35G -jar ${gatk4} GenomicsDBImport --genomicsdb-update-workspace-path ${wrk}/genoDB/${ProjectID}-${loci} --batch-size 250 -L ${GATK_Loci_ARG} --sample-name-map ${wrk}/${ProjectID}_${loci}.sample_map --reader-threads 2 --consolidate &>> ${wrk}/${ProjectID}-${loci}.current-genoDB.log
+	 GenomicsExitStatus=$?
+	 check_importexit
+
 fi
 
 

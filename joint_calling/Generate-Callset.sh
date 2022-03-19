@@ -71,7 +71,7 @@ then
 
 	# Download & Parse gVCF
 	echo -e "\\nRunning creation mode\\n"
-	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_23161_0_0.gvcf.gz$@.g.vcf.gz@g'|sed 's@_23161_0_0.gvcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
+	cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_23161_0_0.gvcf.gz$@.g.vcf.gz@g'|sed 's@_23161_0_0.gvcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@.WXS.g.vcf.gz$@.g.vcf.gz@g'|sed 's@.WXS.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g' | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
 	touch ${wrk}/${ProjectID}_${loci}.imported.txt
 
 
@@ -130,7 +130,7 @@ else
 
 	echo "FilterGVCF Genodb: $(date)"
 	# Filter gVCF list
-	# cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  > ${wrk}/${ProjectID}-gVCF.list
+	# cut -d \| -f 2 ${wrk}/${ProjectID}.list | sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g|sed 's@.WXS.g.vcf.gz$@.g.vcf.gz@g'|sed 's@.WXS.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g''  > ${wrk}/${ProjectID}-gVCF.list
 	# touch tmp
 	# awk -F "/" '{print "/"$NF}' ${ProjectID}-gVCF.list | grep -v "tbi" | while read gvcf
 	# 	do
@@ -146,10 +146,10 @@ else
 	imported=${wrk}/${ProjectID}_${loci}.imported.txt
 	vcf_list=${wrk}/${ProjectID}.list
 	echo "PWD=${PWD}"
-	cat <(cut -f1 "$imported"|cut -f1 -d".") <(cut -f1 -d"|" "$vcf_list") |sort|uniq -u| awk '{print( $0)}' > samples_to_add.list
+	cat <(cut -f1 "$imported"|cut -f1 -d".") <(cut -f1 -d"|" "$vcf_list"|cut -f 1 -d".") |sort|uniq -u| awk '{print( $0)}' > samples_to_add.list
 	echo "found $(wc -l samples_to_add.list) samples to add"
 	#use python dict here since grep can not handle large numner of regex (needed for matching begin of string)
-	python -c 'z={x.split("|")[0]:x.strip() for x in  open("Test_Exome.list").readlines()}; q=[print(z[x.strip()]) for x in  open("samples_to_add.list","r").readlines()]' > tmp
+	python -c 'z={x.split("|")[0].split(".")[0]:x.strip() for x in  open("Test_Exome.list").readlines()}; q=[print(z[x.strip()]) for x in  open("samples_to_add.list","r").readlines()]' > tmp
 	mv tmp ${ProjectID}.list
 	if [ ! -s "${ProjectID}".list ] ;then
 		echo "No new samples to add"
@@ -167,7 +167,7 @@ else
 	fi 
 
 	# Iterate over batches
-	cut -d \| -f 2 ${ProjectID}.list | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_23161_0_0.gvcf.gz$@.g.vcf.gz@g'|sed 's@_23161_0_0.gvcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
+	cut -d \| -f 2 ${ProjectID}.list |sort -R | awk '{print $1"\n"$1".tbi"}' | awk -F '/' '{print $0" file://'${wrk}'/In_gVCFs/"$NF}' |sed 's@_23161_0_0.gvcf.gz$@.g.vcf.gz@g'|sed 's@_23161_0_0.gvcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@_exome_extract.g.vcf.gz$@.g.vcf.gz@g'|sed 's@_exome_extract.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'|sed 's@.WXS.g.vcf.gz$@.g.vcf.gz@g'|sed 's@.WXS.g.vcf.gz.tbi$@.g.vcf.gz.tbi@g'  | awk 'NR%2000 == 1 { out="'${wrk}'/'${ProjectID}'-gVCF-"++i".list"} { print > out }'
 	N=$(ls ${wrk}/${ProjectID}*gVCF*list | wc -l)
 	N_Samples=$(cat ${wrk}/${ProjectID}*gVCF*[0-9]*list | grep -c "gz$")
 	count=0

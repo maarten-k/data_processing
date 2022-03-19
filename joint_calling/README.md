@@ -50,7 +50,7 @@ done
 
 ```bash
 # List gVCFs to import into GATK's Genomics DB (genoDB)
-echo -e "select SM, '${Gloubs_Dir}/' || b38_gVCF from b38_SM where b38_gVCF like '%Country%' and Site = 'Cirulli' order by random() limit 30;" | sqlite3 ${db} > ${wrk}/${ProjectID}.list
+echo -e "select SM, '${Gloubs_Dir}/' || b38_gVCF from b38_SM where b38_gVCF like '%Country%' and Site = 'Cirulli' order by random() limit 100000;" | sqlite3 ${db} > ${wrk}/${ProjectID}.list
 # less ${wrk}/${ProjectID}.list
 
 
@@ -62,7 +62,7 @@ globus-url-copy -c -cd file://${wrk}/${ProjectID}.list ${out}/VCF/${ProjectID}.l
 
 # Stage data
 rm -f ${wrk}/${ProjectID}.staging.txt
-toStage=$( cut -d \/ -f 9- ${wrk}/${ProjectID}.list | awk ' { print "'${SRM_Dir}'/"$1"\n'${SRM_Dir}'/"$1".tbi" } ' | xargs)
+toStage=$( cut -d \/ -f 9- ${wrk}/${ProjectID}.list | awk ' { print "/projectmine-nfs/"$1"\n/project/"$1".tbi" } ' | xargs)
 nohup srm-bring-online -lifetime=1209600 ${toStage} &>> ${wrk}/${ProjectID}.staging.txt &
 ```
 

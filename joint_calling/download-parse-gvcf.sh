@@ -15,7 +15,7 @@ mkdir -p ${wrk}/In_gVCFs ${out}
 cd ${wrk}/In_gVCFs
 touch ${wrk}/Samples-Dropped.txt
 
-#geneate mapping from chomomsome name in the vcf without the chr prefix to a one with chr prefix
+#geneate mapping for chromosome name in the vcf without the chr prefix to one with chr prefix
 #this is needed for ukbiobank files
 rm -f number2chr_conv.txt 
 for i in {1..22} X Y MT; do echo "$i chr$i" >> number2chr_conv.txt;done
